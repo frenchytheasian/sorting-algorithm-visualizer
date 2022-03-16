@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 pygame.init()
 
 class DrawInformation:
@@ -17,7 +18,7 @@ class DrawInformation:
     ]
 
     FONT = pygame.font.SysFont('Arial', 20)
-    LARGE_FONT = pygame.font.SysFont('Arial', 50)
+    LARGE_FONT = pygame.font.SysFont('Arial', 30)
     SIDE_PAD = 100
     TOP_PAD = 150
 
@@ -35,17 +36,20 @@ class DrawInformation:
         self.min_val = min(lst)
 
         self.block_width = round((self.width - self.SIDE_PAD) / len(lst))
-        self.block_height = round((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
+        self.block_height = math.floor((self.height - self.TOP_PAD) / (self.max_val - self.min_val))
         self.start_x = self.SIDE_PAD // 2
 
-def draw(draw_info: DrawInformation):
+def draw(draw_info: DrawInformation, algo_name, ascending):
     draw_info.window.fill(draw_info.BACKGROUND_COLOR)
 
+    title = draw_info.LARGE_FONT.render(f"{algo_name} - {'Ascending' if ascending else 'Descending'}", 1, draw_info.GREEN)
+    draw_info.window.blit(title, (draw_info.width/2 - title.get_width()/2, 5))
+
     controls = draw_info.FONT.render("R - Reset | Space - Start Sorting | A - Ascending | D - Descending", 1, draw_info.BLACK)
-    draw_info.window.blit(controls, (draw_info.width/2 - controls.get_width()/2, 5))
+    draw_info.window.blit(controls, (draw_info.width/2 - controls.get_width()/2, 45))
 
     sorting = draw_info.FONT.render("I - Insertion Sort | B - Bubble Sort", 1, draw_info.BLACK)
-    draw_info.window.blit(sorting, (draw_info.width/2 - sorting.get_width()/2, 35))
+    draw_info.window.blit(sorting, (draw_info.width/2 - sorting.get_width()/2, 75))
 
     draw_list(draw_info)
     pygame.display.update()
@@ -115,9 +119,15 @@ def main():
     sorting_algorithm_generator = None
 
     while run:
-        clock.tick(60)
+        clock.tick(100)
 
-        draw(draw_info)
+        if sorting:
+            try:
+                next(sorting_algorithm_generator)
+            except StopIteration:
+                sorting = False
+        else:
+            draw(draw_info, sorting_algo_name, ascending)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
